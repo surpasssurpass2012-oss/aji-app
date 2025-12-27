@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>アジ調査アプリ</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 20px; background-color: #f0f8ff; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 400px; margin: 0 auto; }
+        button { padding: 10px 20px; font-size: 16px; margin: 5px; cursor: pointer; border: none; border-radius: 5px; }
+        .btn-yes { background-color: #ff6b6b; color: white; }
+        .btn-no { background-color: #4ecdc4; color: white; }
+        .btn-login { background-color: #333; color: white; width: 100%; }
+        input { padding: 10px; font-size: 16px; width: 80%; margin-bottom: 10px; }
+        ul { list-style: none; padding: 0; text-align: left; margin-top: 20px; border-top: 1px solid #eee; }
+        li { padding: 5px 0; border-bottom: 1px dotted #ccc; font-size: 14px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="loginScreen" class="card">
+        <h2>🔒 ロックされています</h2>
+        <p>パスワードを入力してください(0000)</p>
+        <input type="password" id="passInput" placeholder="パスワード">
+        <button class="btn-login" onclick="checkPass()">開く</button>
+    </div>
+
+    <div id="appScreen" class="card hidden">
+        <h2>🐟 質問</h2>
+        <p style="font-size: 1.2em; font-weight: bold;">アジが好きですか？</p>
+        
+        <div>
+            <button class="btn-yes" onclick="answer('はい')">はい (好き)</button>
+            <button class="btn-no" onclick="answer('いいえ')">いいえ</button>
+        </div>
+
+        <h3>📝 回答履歴</h3>
+        <button onclick="clearHistory()" style="font-size:10px; background:#ccc;">履歴を消去</button>
+        <ul id="historyList"></ul>
+    </div>
+
+    <script>
+        // パスワード確認
+        function checkPass() {
+            const input = document.getElementById('passInput').value;
+            if (input === "0000") {
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('appScreen').classList.remove('hidden');
+                loadHistory(); // 履歴を読み込む
+            } else {
+                alert("パスワードが違います");
+            }
+        }
+
+        // 回答を保存する処理
+        function answer(choice) {
+            const now = new Date().toLocaleString();
+            const data = { choice: choice, time: now };
+
+            // 以前のデータを取得（なければ空のリスト）
+            let history = JSON.parse(localStorage.getItem('aji_history')) || [];
+            history.unshift(data); // 新しいものを先頭に追加
+
+            // ブラウザに保存
+            localStorage.setItem('aji_history', JSON.stringify(history));
+
+            alert(`「${choice}」を記録しました！`);
+            loadHistory(); // 画面更新
+        }
+
+        // 履歴を表示する処理
+        function loadHistory() {
+            let history = JSON.parse(localStorage.getItem('aji_history')) || [];
+            const list = document.getElementById('historyList');
+            list.innerHTML = ""; // 一旦クリア
+
+            history.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = `${item.time} : ${item.choice}`;
+                list.appendChild(li);
+            });
+        }
+
+        // 履歴削除（テスト用）
+        function clearHistory() {
+            if(confirm('履歴を全て消しますか？')) {
+                localStorage.removeItem('aji_history');
+                loadHistory();
+            }
+        }
+    </script>
+</body>
+</html>
